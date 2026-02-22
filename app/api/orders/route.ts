@@ -10,8 +10,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 })
     }
 
-    const subtotal = items.reduce(
-      (sum: number, item: any) => sum + item.price * item.quantity,
+    // Resolve product IDs — cart may store slugs instead of CUIDs
+    const resolvedItems = await Promise.all(
+      items.map(async (item: Record<string, unknown>) => {
+        const rawId = (item.productId || item.id) as string
+        // Check if it looks like a CUID (starts with c and alphanumeric)
+        const isCuid = /^c[a-z0-9]{20,}$/i.test(rawId)
+
+        if (isCuid) {
+          return { ...item, productId: rawId }
+        }
+
+        // Treat as slug — look up real product ID
+        const product = await prisma.product.findFirst({
+          where: { slug: rawId },
+          select: { id: true },
+        })
+
+        if (!product) {
+          throw new Error(`Product not found: ${rawId}`)
+        }
+
+        return { ...item, productId: product.id }
+      })
+    )
+
+    const subtotal = resolvedItems.reduce(
+      (sum: number, item: Record<string, unknown>) =>
+        sum + (item.price as number) * (item.quantity as number),
       0
     )
     const shipping = subtotal > 50 ? 0 : 5
@@ -28,12 +54,12 @@ export async function POST(req: NextRequest) {
         customerPhone,
         shippingAddress,
         items: {
-          create: items.map((item: any) => ({
-            productId: item.productId || item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            size: item.size || null,
+          create: resolvedItems.map((item: Record<string, unknown>) => ({
+            productId: item.productId as string,
+            name: item.name as string,
+            price: item.price as number,
+            quantity: item.quantity as number,
+            size: (item.size as string) || null,
           })),
         },
       },
@@ -43,8 +69,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, order })
   } catch (error) {
     console.error("Order creation error:", error)
+    const message = error instanceof Error ? error.message : "Failed to create order"
     return NextResponse.json(
-      { error: "Failed to create order" },
+      { error: message },
       { status: 500 }
     )
   }
