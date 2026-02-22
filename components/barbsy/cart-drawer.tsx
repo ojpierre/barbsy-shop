@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -13,13 +14,25 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer"
 import { useCart } from "./cart-context"
+import {
+  type CurrencyCode,
+  detectCurrency,
+  formatPrice,
+  formatShipping,
+  shippingCostUSD,
+} from "@/lib/currency"
 
 export function CartDrawer() {
   const { items, removeItem, updateQuantity, isOpen, setIsOpen, itemCount, subtotal } = useCart()
   const router = useRouter()
+  const [currency, setCurrency] = useState<CurrencyCode>("KES")
 
-  const shipping = subtotal > 50 ? 0 : 5
-  const total = subtotal + shipping
+  useEffect(() => {
+    setCurrency(detectCurrency())
+  }, [])
+
+  const shippingUSD = shippingCostUSD(subtotal)
+  const totalUSD = subtotal + shippingUSD
 
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen} direction="right">
@@ -98,7 +111,7 @@ export function CartDrawer() {
 
                   {/* Price */}
                   <div className="text-right">
-                    <p className="font-medium text-foreground">${item.price * item.quantity}</p>
+                    <p className="font-medium text-foreground">{formatPrice(item.price * item.quantity, currency)}</p>
                   </div>
                 </div>
               ))}
@@ -112,15 +125,15 @@ export function CartDrawer() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between text-muted-foreground">
                 <span>Subtotal</span>
-                <span>${subtotal}</span>
+                <span>{formatPrice(subtotal, currency)}</span>
               </div>
               <div className="flex justify-between text-muted-foreground">
                 <span>Shipping</span>
-                <span>{shipping === 0 ? 'Free' : `$${shipping}`}</span>
+                <span>{formatShipping(subtotal, currency)}</span>
               </div>
               <div className="flex justify-between text-base font-medium text-foreground pt-2 border-t border-border/50">
                 <span>Total</span>
-                <span>${total}</span>
+                <span>{formatPrice(totalUSD, currency)}</span>
               </div>
             </div>
 
@@ -133,7 +146,7 @@ export function CartDrawer() {
               }}
               className="w-full bg-primary text-primary-foreground py-4 rounded-full font-medium hover:bg-primary/90 barbsy-transition"
             >
-              Checkout — ${total.toFixed(2)}
+              Checkout — {formatPrice(totalUSD, currency)}
             </button>
 
             <DrawerClose asChild>

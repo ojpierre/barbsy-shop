@@ -8,6 +8,7 @@ import { ChevronLeft, Minus, Plus, ChevronDown, Leaf, Heart, Award, Recycle, Sta
 import { Header } from "@/components/barbsy/header"
 import { Footer } from "@/components/barbsy/footer"
 import { useCart } from "@/components/barbsy/cart-context"
+import { type CurrencyCode, detectCurrency, formatPrice } from "@/lib/currency"
 
 interface ProductData {
   id: string
@@ -47,6 +48,11 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1)
   const [openAccordion, setOpenAccordion] = useState<AccordionSection | null>("details")
   const [isAdded, setIsAdded] = useState(false)
+  const [currency, setCurrency] = useState<CurrencyCode>("KES")
+
+  useEffect(() => {
+    setCurrency(detectCurrency())
+  }, [])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -194,10 +200,10 @@ export default function ProductPage() {
 
               {/* Price */}
               <div className="flex items-center gap-3 mb-8">
-                <span className="text-3xl font-medium text-foreground">${product.price}</span>
+                <span className="text-3xl font-medium text-foreground">{formatPrice(product.price, currency)}</span>
                 {product.originalPrice && (
                   <span className="text-xl text-muted-foreground line-through">
-                    ${product.originalPrice}
+                    {formatPrice(product.originalPrice, currency)}
                   </span>
                 )}
               </div>

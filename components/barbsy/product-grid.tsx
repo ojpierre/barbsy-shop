@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ShoppingBag } from "lucide-react"
 import { useCart } from "./cart-context"
+import { type CurrencyCode, detectCurrency, formatPrice } from "@/lib/currency"
 
 type Category = "cream" | "oil" | "serum"
 
@@ -145,9 +146,14 @@ export function ProductGrid() {
   const [isVisible, setIsVisible] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [headerVisible, setHeaderVisible] = useState(false)
+  const [currency, setCurrency] = useState<CurrencyCode>("KES")
   const gridRef = useRef<HTMLDivElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
   const { addItem } = useCart()
+
+  useEffect(() => {
+    setCurrency(detectCurrency())
+  }, [])
   
   const filteredProducts = products.filter(product => product.category === selectedCategory)
 
@@ -315,10 +321,10 @@ export function ProductGrid() {
                   <h3 className="font-serif text-lg text-foreground mb-1">{product.name}</h3>
                   <p className="text-sm text-muted-foreground mb-3">{product.description}</p>
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-foreground">${product.price}</span>
+                    <span className="font-medium text-foreground">{formatPrice(product.price, currency)}</span>
                     {product.originalPrice && (
                       <span className="text-sm text-muted-foreground line-through">
-                        ${product.originalPrice}
+                        {formatPrice(product.originalPrice, currency)}
                       </span>
                     )}
                   </div>

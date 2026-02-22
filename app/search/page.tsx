@@ -8,6 +8,7 @@ import { Search as SearchIcon, Loader2, ShoppingBag } from "lucide-react"
 import { Header } from "@/components/barbsy/header"
 import { Footer } from "@/components/barbsy/footer"
 import { useCart } from "@/components/barbsy/cart-context"
+import { type CurrencyCode, detectCurrency, formatPrice } from "@/lib/currency"
 
 interface Product {
   id: string
@@ -44,7 +45,12 @@ function SearchContent() {
   const [results, setResults] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
+  const [currency, setCurrency] = useState<CurrencyCode>("KES")
   const { addItem } = useCart()
+
+  useEffect(() => {
+    setCurrency(detectCurrency())
+  }, [])
 
   const doSearch = useCallback(async (q: string) => {
     if (q.trim().length < 2) {
@@ -187,11 +193,11 @@ function SearchContent() {
                         </p>
                         <div className="flex items-center gap-2">
                           <span className="text-lg font-medium text-foreground">
-                            ${product.price}
+                            {formatPrice(product.price, currency)}
                           </span>
                           {product.originalPrice && (
                             <span className="text-sm text-muted-foreground line-through">
-                              ${product.originalPrice}
+                              {formatPrice(product.originalPrice, currency)}
                             </span>
                           )}
                         </div>

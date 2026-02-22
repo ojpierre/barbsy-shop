@@ -7,6 +7,7 @@ import { ShoppingBag, SlidersHorizontal, X, Loader2 } from "lucide-react"
 import { Header } from "@/components/barbsy/header"
 import { Footer } from "@/components/barbsy/footer"
 import { useCart } from "@/components/barbsy/cart-context"
+import { type CurrencyCode, detectCurrency, formatPrice } from "@/lib/currency"
 
 interface Product {
   id: string
@@ -28,8 +29,13 @@ export default function ShopPage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [showFilters, setShowFilters] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [currency, setCurrency] = useState<CurrencyCode>("KES")
   const gridRef = useRef<HTMLDivElement>(null)
   const { addItem } = useCart()
+
+  useEffect(() => {
+    setCurrency(detectCurrency())
+  }, [])
 
   // Fetch products from database
   useEffect(() => {
@@ -280,10 +286,10 @@ function ProductCard({
           <h3 className="font-serif text-xl text-foreground mb-1">{product.name}</h3>
           <p className="text-sm text-muted-foreground mb-4">{product.description}</p>
           <div className="flex items-center gap-2">
-            <span className="text-lg font-medium text-foreground">${product.price}</span>
+            <span className="text-lg font-medium text-foreground">{formatPrice(product.price, currency)}</span>
             {product.originalPrice && (
               <span className="text-sm text-muted-foreground line-through">
-                ${product.originalPrice}
+                {formatPrice(product.originalPrice, currency)}
               </span>
             )}
           </div>
