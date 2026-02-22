@@ -67,13 +67,14 @@ export default function ShopPage() {
       { threshold: 0.1 }
     )
 
-    if (gridRef.current) {
-      observer.observe(gridRef.current)
+    const el = gridRef.current
+    if (el) {
+      observer.observe(el)
     }
 
     return () => {
-      if (gridRef.current) {
-        observer.unobserve(gridRef.current)
+      if (el) {
+        observer.unobserve(el)
       }
     }
   }, [])
@@ -191,6 +192,7 @@ export default function ShopPage() {
                   product={product}
                   index={index}
                   isVisible={isVisible}
+                  currency={currency}
                   onAddToCart={() => {
                     addItem({
                       id: product.slug,
@@ -216,12 +218,14 @@ function ProductCard({
   product, 
   index, 
   isVisible,
-  onAddToCart
+  onAddToCart,
+  currency
 }: { 
   product: Product
   index: number
   isVisible: boolean
   onAddToCart: () => void
+  currency: CurrencyCode
 }) {
   const [imageLoaded, setImageLoaded] = useState(false)
 

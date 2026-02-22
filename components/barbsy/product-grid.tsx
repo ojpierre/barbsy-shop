@@ -196,20 +196,23 @@ export function ProductGrid() {
       { threshold: 0.1 }
     )
 
-    if (gridRef.current) {
-      gridObserver.observe(gridRef.current)
+    const gridEl = gridRef.current
+    const headerEl = headerRef.current
+
+    if (gridEl) {
+      gridObserver.observe(gridEl)
     }
 
-    if (headerRef.current) {
-      headerObserver.observe(headerRef.current)
+    if (headerEl) {
+      headerObserver.observe(headerEl)
     }
 
     return () => {
-      if (gridRef.current) {
-        gridObserver.unobserve(gridRef.current)
+      if (gridEl) {
+        gridObserver.unobserve(gridEl)
       }
-      if (headerRef.current) {
-        headerObserver.unobserve(headerRef.current)
+      if (headerEl) {
+        headerObserver.unobserve(headerEl)
       }
     }
   }, [])

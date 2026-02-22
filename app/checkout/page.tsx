@@ -132,7 +132,7 @@ export default function CheckoutPage() {
 
     try {
       const client = new window.google.payments.api.PaymentsClient({
-        environment: "TEST",
+        environment: "PRODUCTION",
       })
       gpayClientRef.current = client
 
