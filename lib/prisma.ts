@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { PrismaNeon } from "@prisma/adapter-neon"
-import { neon } from "@neondatabase/serverless"
 import pg from "pg"
 
 const globalForPrisma = globalThis as unknown as {
@@ -13,8 +12,7 @@ function createPrismaClient() {
 
   // Use Neon serverless adapter in production (Vercel), pg adapter locally
   if (process.env.NODE_ENV === "production" || url.includes("neon.tech")) {
-    const sql = neon(url)
-    const adapter = new PrismaNeon(sql)
+    const adapter = new PrismaNeon({ connectionString: url })
     return new PrismaClient({ adapter })
   }
 
